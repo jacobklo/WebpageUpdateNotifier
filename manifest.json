@@ -1,0 +1,14 @@
+{
+	"manifest_version" : 2,
+
+	"name" : "Webpage Updates Notifier"
+	,"description" : " - Notify you and Auto refresh when feeds comes!"
+	,"version" : "0.1"
+ 
+  ,"background" : {
+    "scripts" : [
+      "background.js"
+    ]
+  }
+  ,"permissions": ["alarms", "notifications", "*://*/*"]
+}
