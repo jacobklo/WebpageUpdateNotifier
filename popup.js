@@ -1,0 +1,1 @@
+var globalData = chrome.extension.getbackgroundpage().globalData;

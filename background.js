@@ -9,6 +9,21 @@ var notOptions = [
         "iconUrl" : "icon.png"
     }
 ]
+
+var globalData = {};
+globalData.websites = [
+    {
+        "web" : "book.qidian.com/info/3513193"
+        ,"rulesKey" : "data-eid"
+        ,"rulesObj" : "qd_G19"
+    }
+    ,{
+        "web" : "book.qidian.com/info/1004608738"
+        ,"rulesKey" : "data-eid"
+        ,"rulesObj" : "qd_G19"
+    }
+];
+
 chrome.alarms.create(reloadWebsiteAlarm, {
     delayInMinutes: 0,
     periodInMinutes: 1
@@ -17,7 +32,11 @@ chrome.alarms.create(reloadWebsiteAlarm, {
 chrome.alarms.onAlarm.addListener(function(alarm) {
     if (alarm.name === reloadWebsiteAlarm) {
         console.log ("Heel0o");
-        requestCrossDomain("book.qidian.com/info/3513193");
+        for (var w in globalData.websites) {
+            var obj = globalData.websites[w];
+            console.log (obj);
+            requestCrossDomain(obj.web);
+        }
     }
 });
 
@@ -26,9 +45,6 @@ function creationCallback(notID) {
         console.log(chrome.runtime.lastError.message);
     }
 }
-
-var globalData = {};
-globalData.disabled = false;
 
 window.addEventListener("updateSource", function(e) {
   console.log ("listened to updateSource");
@@ -46,8 +62,12 @@ window.addEventListener("updateSource", function(e) {
 });
 
 function jsonGetRequired(jsonObj, key) {
-  if (key === 'data-eid' && jsonObj[key] === "qd_G19") {
-    return jsonObj;
+  for (var w in globalData.websites) {
+    var obj = globalData.websites[w];
+    if ( key === obj.rulesKey && jsonObj[key]=== obj.rulesObj) {
+        console.log ( " jsonGetRequired");
+        return jsonObj;
+    }
   }
   return null;
 }
