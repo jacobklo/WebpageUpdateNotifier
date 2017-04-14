@@ -1,21 +1,4 @@
-var reloadWebsiteAlarm = "reloadWebsiteAlarm";
-
-var notOptions = [
-    {
-        "type" : "basic",
-        "title": "Basic Notification",
-        "message": "Short message part",
-        "expandedMessage": "Longer part of the message",
-        "iconUrl" : "icon.png"
-    }
-]
-chrome.alarms.create(reloadWebsiteAlarm, {
-    delayInMinutes: 0,
-    periodInMinutes: 1
-});
-
 var globalData = {};
-globalData.disabled = false;
 
 class WebPage{
   constructor(name, website, rules) {
@@ -68,20 +51,43 @@ class WebPage{
 
   handleUpdateSource() {
     if (!this.event) {
-      console.log ( "This.e is not set");
+      console.log ( "This.event is not set");
       return;
     }
     var e = this.event;
     var that = this;
+
     var getJson = jsonAction(e.data, jsonGetRequired);
     this.getNeededJson = getJson.manipulatedItems[0]["title"];
-    console.log (this.getNeededJson);
+    console.log ("Old : " + this.lastGetNeededJson + " - New : " + this.getNeededJson);
     if (!this.lastGetNeededJson || this.getNeededJson != this.lastGetNeededJson) {
-      console.log (this.lastGetNeededJson);
-      console.log (this.getNeededJson);
-      
       this.lastGetNeededJson = this.getNeededJson;
-      chrome.notifications.create("id",notOptions[0] , creationCallback);
+      var options = {
+        "type" : "basic",
+        "title": "Webpage Update Notifier",
+        "message": "New updates : " + this.event.data.objName,
+        "expandedMessage": "Go to : " + this.event.data.website,
+        "iconUrl" : "icon.png"
+      }
+      var nid = "nid" + Math.random() *999999;
+      that.nid = nid;
+      chrome.notifications.create(nid, options , creationNotificationCallback);
+    }
+
+    function creationNotificationCallback(id) {
+        chrome.notifications.onClicked.addListener( function (id) {
+            if (that.nid === id) {
+                chrome.tabs.create({
+                    "url" : "http://" + that.website
+                    ,"active" : true
+                }, creationCallback);
+            }
+        });
+        setTimeout(function() {
+            chrome.notifications.clear(id, function(wasCleared) {
+                
+            });
+        }, 9000);
     }
 
     function jsonGetRequired(jsonObj, key) {
@@ -152,6 +158,14 @@ window.addEventListener("updateSource", function(e) {
     }
   }
 });
+
+var reloadWebsiteAlarm = "reloadWebsiteAlarm";
+
+chrome.alarms.create(reloadWebsiteAlarm, {
+    delayInMinutes: 0,
+    periodInMinutes: 1
+});
+
 
 chrome.alarms.onAlarm.addListener(function(alarm) {
     if (alarm.name === reloadWebsiteAlarm) {
