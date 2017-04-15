@@ -111,7 +111,9 @@ class WebPage{
         ,"requireInteraction" : true // so it wont close for default 5 sec until i set so
         ,"items": [
           { title: "New updates!", message: "Click to open."}
-          ,{ title: "Go to: ", message: that.webRulesName}
+          ,{ title: that.webRulesName, message: ""}
+          ,{ title: "", message: this.lastGetNeededJson}
+          
         ]
       }
       var nid = "nid" + Math.random() *999999;
@@ -132,7 +134,7 @@ class WebPage{
             chrome.notifications.clear(id, function(wasCleared) {
                 
             });
-        }, 20000);
+        }, 2000);
     }
 
     function jsonGetRequired(jsonObj, key) {
@@ -170,8 +172,16 @@ var website2 = new WebPage("website2" , "book.qidian.com/info/1003694333", {
   "ruleKey" : "data-eid"
   ,"ruleObj" : "qd_G19"
 }, webRulesTitle);
+var website3 = new WebPage("website3" , "book.qidian.com/info/1004608738", {
+  "ruleKey" : "data-eid"
+  ,"ruleObj" : "qd_G19"
+}, webRulesTitle);
+var website4 = new WebPage("website4" , "book.qidian.com/info/3638453", {
+  "ruleKey" : "data-eid"
+  ,"ruleObj" : "qd_G19"
+}, webRulesTitle);
 
-globalData.websites = [ website1, website2 ];
+globalData.websites = [ website1, website2, website3, website4 ];
 
 window.addEventListener("updateSource", function(e) {
   for (var w in globalData.websites) {
