@@ -1,10 +1,43 @@
 var globalData = {};
 
+var JsonAction = function(jsonObj, actionFunction) {
+  var manipulatedItems = [];
+  var result = subJsonAction(jsonObj, actionFunction, manipulatedItems);
+  return {
+    manipulatedItems: manipulatedItems
+    , result: result
+  }
+
+  function subJsonAction(jsonObj, actionFunction, manipulatedItems) {
+    if (!jsonObj || !actionFunction) {
+      return {};
+    }
+    if (jsonObj.constructor === Array) {
+      for (var i = 0; i < jsonObj.length; i++) {
+        subJsonAction(jsonObj[i], actionFunction, manipulatedItems);
+      }
+    }
+    else {
+      for (var key in jsonObj) {
+        var doAction = actionFunction(jsonObj, key);
+        if (doAction) {
+          manipulatedItems.push(doAction);
+        }
+        else if (isNaN(key)) {
+          subJsonAction(jsonObj[key], actionFunction, manipulatedItems);
+        }
+      }
+    }
+    return jsonObj;
+  }
+}
+
 class WebPage{
-  constructor(name, website, rules) {
+  constructor(name, website, rules, webRulesTitle) {
     this.name = name;
     this.website = website;
     this.rules = rules;
+    this.webRulesTitle = webRulesTitle;
     this.requestCrossDomain();
     this.handleUpdateSource();
   }
@@ -20,7 +53,8 @@ class WebPage{
     var that = this;
 
     // Take the provided url, and add it to a YQL query. Make sure you encode it!
-    var yql = 'http://query.yahooapis.com/v1/public/yql?q=' + encodeURIComponent('select * from html where url="' + this.website + '"');//  + '&format=xml&callback=cbFunc';
+    var yql = 'http://query.yahooapis.com/v1/public/yql?q=' + encodeURIComponent('select * from html where url="' + this.website + '"' );//  + '&format=xml&callback=cbFunc';
+    yql += ' and xpath="/html"';
     yql += '&format=json';
     // Request that YSQL string, and run a callback function.
     // Pass a defined function to prevent cache-busting.
@@ -57,17 +91,28 @@ class WebPage{
     var e = this.event;
     var that = this;
 
-    var getJson = jsonAction(e.data, jsonGetRequired);
+    var getJson = JsonAction(e.data, jsonGetRequired);
+    
+    if (!this.webRulesName) {
+      var getTitleJson = JsonAction(e.data, jsonGetTitle);
+      this.webRulesName = getTitleJson.manipulatedItems[0];
+    }
+
     this.getNeededJson = getJson.manipulatedItems[0]["title"];
     console.log ("Old : " + this.lastGetNeededJson + " - New : " + this.getNeededJson);
     if (!this.lastGetNeededJson || this.getNeededJson != this.lastGetNeededJson) {
       this.lastGetNeededJson = this.getNeededJson;
       var options = {
-        "type" : "basic",
-        "title": "Webpage Update Notifier",
-        "message": "New updates : " + this.event.data.objName,
-        "expandedMessage": "Go to : " + this.event.data.website,
-        "iconUrl" : "icon.png"
+        "type" : "list"
+        ,"title": "Webpage Update Notifier"
+        ,"message": "New updates : " + this.event.data.objName // Not using
+        ,"expandedMessage": "Go to : " + this.event.data.website// Not using
+        ,"iconUrl" : "icon.png"
+        ,"requireInteraction" : true // so it wont close for default 5 sec until i set so
+        ,"items": [
+          { title: "New updates!", message: "Click to open."}
+          ,{ title: "Go to: ", message: that.webRulesName}
+        ]
       }
       var nid = "nid" + Math.random() *999999;
       that.nid = nid;
@@ -87,7 +132,7 @@ class WebPage{
             chrome.notifications.clear(id, function(wasCleared) {
                 
             });
-        }, 9000);
+        }, 20000);
     }
 
     function jsonGetRequired(jsonObj, key) {
@@ -97,54 +142,34 @@ class WebPage{
       return null;
     }
 
+    function jsonGetTitle(jsonObj, key) {
+      if (key === that.webRulesTitle.webRulesKey) {
+        var head = jsonObj[key];
+        return head[that.webRulesTitle.webRulesKey2];
+      }
+      return null;
+    }
+
     function creationCallback(notID) {
       if (chrome.runtime.lastError) {
           console.log(chrome.runtime.lastError.message);
       }
     }
-
-    function jsonAction(jsonObj, actionFunction) {
-      var manipulatedItems = [];
-      var result = subJsonAction(jsonObj, actionFunction, manipulatedItems);
-      return {
-        manipulatedItems: manipulatedItems
-        , result: result
-      }
-
-      function subJsonAction(jsonObj, actionFunction, manipulatedItems) {
-        if (!jsonObj || !actionFunction) {
-          return {};
-        }
-        if (jsonObj.constructor === Array) {
-          for (var i = 0; i < jsonObj.length; i++) {
-            subJsonAction(jsonObj[i], actionFunction, manipulatedItems);
-          }
-        }
-        else {
-          for (var key in jsonObj) {
-            var doAction = actionFunction(jsonObj, key);
-            if (doAction) {
-              manipulatedItems.push(doAction);
-            }
-            else if (isNaN(key)) {
-              subJsonAction(jsonObj[key], actionFunction, manipulatedItems);
-            }
-          }
-        }
-        return jsonObj;
-      }
-    }
   }
 }
 
+var webRulesTitle = {
+  "webRulesKey" : "head"
+  ,"webRulesKey2" : "title"
+};
 var website1 = new WebPage("website1" , "book.qidian.com/info/3513193", {
   "ruleKey" : "data-eid"
   ,"ruleObj" : "qd_G19"
-});
+}, webRulesTitle);
 var website2 = new WebPage("website2" , "book.qidian.com/info/1003694333", {
   "ruleKey" : "data-eid"
   ,"ruleObj" : "qd_G19"
-});
+}, webRulesTitle);
 
 globalData.websites = [ website1, website2 ];
 
