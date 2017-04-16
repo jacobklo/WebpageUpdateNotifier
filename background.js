@@ -1,6 +1,6 @@
 chrome.browserAction.onClicked.addListener(function(tab) { 
   chrome.windows.create(
-      {url: "app.html", type: "popup", width: 800, height: 600});
+      {url: "app.html", type: "popup", width: 500, height: 800});
 });
 
 var globalData = {};
@@ -139,10 +139,11 @@ class WebPage{
             chrome.notifications.clear(id, function(wasCleared) {
                 
             });
-        }, 2000);
+        }, 20000);
     }
 
     function jsonGetRequired(jsonObj, key) {
+      // TODO : make it more generic
       if (key === that.rules.ruleKey && jsonObj[key] === that.rules.ruleObj) {
         return jsonObj;
       }
@@ -163,6 +164,26 @@ class WebPage{
       }
     }
   }
+}
+
+var webJson = 
+[
+  {
+    "name" : "website1"
+    ,"website" : "book.qidian.com/info/3513193"
+    ,"rulesTitle" : {
+      "webRulesKey" : "head"
+      ,"webRulesKey2" : "title"
+    }
+    , "rules" : {
+      "ruleKey" : "data-eid"
+      ,"ruleObj" : "qd_G19"
+    }
+  }
+];
+
+function parseJson(webJson) {
+
 }
 
 var webRulesTitle = {
