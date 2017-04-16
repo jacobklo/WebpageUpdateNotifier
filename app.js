@@ -1,16 +1,10 @@
 var bgPage = chrome.extension.getBackgroundPage();
 var globalData = bgPage.globalData;
 
-
-document.addEventListener('DOMContentLoaded', function () {
-  for (var i in globalData.websites) {
-    var web = globalData.websites[i];
-    alert(web);
-  }
+window.addEventListener("load", function() {
+  document.getElementById("button").addEventListener("click", openApp);
 });
 
-
-/*
 function websiteTable(n, w, k, o) {
   var name = document.createElement('input');
   name.type = 'text';
@@ -20,7 +14,7 @@ function websiteTable(n, w, k, o) {
   var website = document.createElement('input');
   website.type = 'text';
   website.value = w;
-  document.body.appendChild(websites);
+  document.body.appendChild(website);
 
   var ruleKey = document.createElement('input');
   ruleKey.type = 'text';
@@ -35,14 +29,10 @@ function websiteTable(n, w, k, o) {
 };
 
 document.addEventListener('DOMContentLoaded', function () {
-  console.log ("DOMContentLoaded");
   for (var i in globalData.websites) {
     var web = globalData.websites[i];
-    console.log (web);
-    websiteTable(web.name, web.wesite web.rules.ruleKey, web.rules.ruleObj);
+    websiteTable(web.name, web.website, web.rules.ruleKey, web.rules.ruleObj);
   }
 });
-
- */
 
 

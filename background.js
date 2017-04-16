@@ -1,3 +1,8 @@
+chrome.browserAction.onClicked.addListener(function(tab) { 
+  chrome.windows.create(
+      {url: "app.html", type: "popup", width: 800, height: 600});
+});
+
 var globalData = {};
 
 var JsonAction = function(jsonObj, actionFunction) {
