@@ -1,3 +1,11 @@
+/*
+ * Webpage Updates Notifier
+ * Version : v0.1
+ * Author : Jacob Lo
+ * Date : April 16, 2017
+ * Lisence : Apache License Version 2.0, January 2004 http://www.apache.org/licenses/
+ */
+
 chrome.browserAction.onClicked.addListener(function(tab) { 
   chrome.windows.create(
       {url: "app.html", type: "popup", width: 500, height: 800});
@@ -5,6 +13,69 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 
 var globalData = {};
 
+//////////////////////////////////////////////////
+/// Default websites
+//////////////////////////////////////////////////
+var webJson = [
+  {
+    "website" : "book.qidian.com/info/3513193"
+    ,"rulesTitle" : {
+      "webRulesKey" : "head"
+      ,"webRulesKey2" : "title"
+    }
+    , "rules" : [
+      {
+        "ruleKey" : "data-eid"
+        ,"ruleObj" : "qd_G19"
+      }
+    ]
+  }
+  ,
+  {
+    "website" : "book.qidian.com/info/1003694333"
+    ,"rulesTitle" : {
+      "webRulesKey" : "head"
+      ,"webRulesKey2" : "title"
+    }
+    , "rules" : [
+      {
+        "ruleKey" : "data-eid"
+        ,"ruleObj" : "qd_G19"
+      }
+    ]
+  }
+  ,
+  {
+    "website" : "book.qidian.com/info/1004608738"
+    ,"rulesTitle" : {
+      "webRulesKey" : "head"
+      ,"webRulesKey2" : "title"
+    }
+    , "rules" : [
+      {
+        "ruleKey" : "data-eid"
+        ,"ruleObj" : "qd_G19"
+      }
+    ]
+  }
+  ,{
+    "website" : "book.qidian.com/info/3638453"
+    ,"rulesTitle" : {
+      "webRulesKey" : "head"
+      ,"webRulesKey2" : "title"
+    }
+    , "rules" : [
+      {
+        "ruleKey" : "data-eid"
+        ,"ruleObj" : "qd_G19"
+      }
+    ]
+  }
+];
+
+//////////////////////////////////////////////////
+/// Json Manipulaitons
+//////////////////////////////////////////////////
 var JsonAction = function(jsonObj, actionFunction) {
   var manipulatedItems = [];
   var result = subJsonAction(jsonObj, actionFunction, manipulatedItems);
@@ -37,9 +108,13 @@ var JsonAction = function(jsonObj, actionFunction) {
   }
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+/// Webpage handler
+/////////////////////////////////////////////////////////////////////////////////////////
+
 class WebPage{
-  constructor(name, website, rules, webRulesTitle) {
-    this.name = name;
+  constructor(website, webRulesTitle, rules) {
+    this.name = "name"+Math.floor(Math.random() * 99999);
     this.website = website;
     this.rules = rules;
     this.webRulesTitle = webRulesTitle;
@@ -143,11 +218,13 @@ class WebPage{
     }
 
     function jsonGetRequired(jsonObj, key) {
-      // TODO : make it more generic
-      if (key === that.rules.ruleKey && jsonObj[key] === that.rules.ruleObj) {
-        return jsonObj;
+      for (var i in that.rules) {
+        var rule = that.rules[i];
+        if (!(key === rule.ruleKey && jsonObj[key] == rule.ruleObj)) {
+          return null;
+        }
       }
-      return null;
+      return jsonObj;
     }
 
     function jsonGetTitle(jsonObj, key) {
@@ -166,49 +243,6 @@ class WebPage{
   }
 }
 
-var webJson = 
-[
-  {
-    "name" : "website1"
-    ,"website" : "book.qidian.com/info/3513193"
-    ,"rulesTitle" : {
-      "webRulesKey" : "head"
-      ,"webRulesKey2" : "title"
-    }
-    , "rules" : {
-      "ruleKey" : "data-eid"
-      ,"ruleObj" : "qd_G19"
-    }
-  }
-];
-
-function parseJson(webJson) {
-
-}
-
-var webRulesTitle = {
-  "webRulesKey" : "head"
-  ,"webRulesKey2" : "title"
-};
-var website1 = new WebPage("website1" , "book.qidian.com/info/3513193", {
-  "ruleKey" : "data-eid"
-  ,"ruleObj" : "qd_G19"
-}, webRulesTitle);
-var website2 = new WebPage("website2" , "book.qidian.com/info/1003694333", {
-  "ruleKey" : "data-eid"
-  ,"ruleObj" : "qd_G19"
-}, webRulesTitle);
-var website3 = new WebPage("website3" , "book.qidian.com/info/1004608738", {
-  "ruleKey" : "data-eid"
-  ,"ruleObj" : "qd_G19"
-}, webRulesTitle);
-var website4 = new WebPage("website4" , "book.qidian.com/info/3638453", {
-  "ruleKey" : "data-eid"
-  ,"ruleObj" : "qd_G19"
-}, webRulesTitle);
-
-globalData.websites = [ website1, website2, website3, website4 ];
-
 window.addEventListener("updateSource", function(e) {
   for (var w in globalData.websites) {
     var ob = globalData.websites[w];
@@ -220,13 +254,50 @@ window.addEventListener("updateSource", function(e) {
   }
 });
 
+/////////////////////////////////////////////////////////////////////////////////////////
+/// Start of background handler, loading default websites json
+/////////////////////////////////////////////////////////////////////////////////////////
+
+function parseWebsites(webJson) {
+  var result = [];
+  for ( var i in webJson ) {
+    var web = webJson[i];
+    if ( web.website && web.rulesTitle && web.rules) {
+      var newWeb = new WebPage(web.website , web.rulesTitle , web.rules);
+      result.push(newWeb);
+    }
+  }
+  return result;
+}
+
+function parseJson(webJsonString) {
+  if (!webJsonString) { return null; }
+  var webJson = JSON.parse(webJsonString);
+  if (!webJson) { return null; }
+  if (webJson.constructor !== Array ) { return null; }
+  return webJson;
+}
+
+function renewJson() {
+
+  var newJson = parseJson(globalData.webJson);
+  if (newJson) {
+    globalData.websites = parseWebsites(newJson);
+  }
+}
+
+globalData.webJson = webJson;
+globalData.websites = parseWebsites(webJson);
+
+/////////////////////////////////////////////////////////
+/// Alarm timer
+/////////////////////////////////////////////////////////
 var reloadWebsiteAlarm = "reloadWebsiteAlarm";
 
 chrome.alarms.create(reloadWebsiteAlarm, {
     delayInMinutes: 0,
     periodInMinutes: 1
 });
-
 
 chrome.alarms.onAlarm.addListener(function(alarm) {
     if (alarm.name === reloadWebsiteAlarm) {

@@ -5,7 +5,33 @@
 </head>
 <body>
 <h1>Webpage Updates Notifier</h1>
+<h2> To set a website to get updates notification, right now we are using Json format. Example : </h2>
+<div style="white-space: pre-wrap;"> 
+  {
+    // This is the website you want to get updates from.
+    "website" : "book.qidian.com/info/3513193"
 
+    // This rule is the get the Title of the website's page, should not need to change
+    ,"rulesTitle" : {
+      "webRulesKey" : "head"
+      ,"webRulesKey2" : "title"
+    }
+
+    // This rules is the get the smallest HTML element that wrap the content of that website,
+    // that you want to get notification when that content has change.
+    // For example, The following is taking from the default website.
+    // <xmp><a class="blue" href="//vipreader.qidian.com/chapter/3513193/363056738" data-eid="qd_G19" data-cid="//vipreader.qidian.com/chapter/3513193/363056738" title="第36篇 第27章 神将们的结局" target="_blank">第36篇 第27章 神将们的结局</a></xmp>
+    , "rules" : [
+      {
+        "ruleKey" : "data-eid"
+        ,"ruleObj" : "qd_G19"
+      }
+    ]
+  }
+ </div>
+<textarea id="webJsonTextarea" rows="20" cols="50"></textarea>
+<p></p>
+<button id="renewButton">Renew</button>
 </div>
 </body>
 </html>
