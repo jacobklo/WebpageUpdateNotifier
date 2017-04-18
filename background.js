@@ -11,6 +11,25 @@ chrome.browserAction.onClicked.addListener(function(tab) {
       {url: "app.html", type: "popup", width: 500, height: 800});
 });
 
+function createNewUpdate(info, tab) {
+  chrome.tabs.insertCSS(tab.id, {
+    file: 'box.css'
+  });
+  chrome.tabs.executeScript(tab.id, {
+    file: 'jQuery.min.js'
+  });
+  chrome.tabs.executeScript(tab.id, {
+    file: 'executeHighlight.js'
+  });
+  console.log("tab: " + JSON.stringify(tab));
+};
+
+var menuCreateNewUpdate = chrome.contextMenus.create(
+  {"title": "Create New Update", "contexts": ["all"], "onclick": createNewUpdate});
+var menuAbout = chrome.contextMenus.create(
+  {"title": "About", "contexts": ["all"], "onclick": createNewUpdate});
+
+
 var globalData = {};
 
 //////////////////////////////////////////////////

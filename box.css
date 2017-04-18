@@ -1,0 +1,13 @@
+  .adblock-highlight-node {
+    background-color: rgba(130, 180, 230, 0.5);
+    outline: solid 1px #0F4D9A;
+    box-sizing: border-box;
+    position: absolute;
+    display: none;
+  }
+  .adblock-killme-overlay {
+    background-color: transparent !important;
+    position: absolute;
+    z-index: 1000000;
+    display: block;
+  }
