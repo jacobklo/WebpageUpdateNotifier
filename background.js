@@ -8,7 +8,10 @@
 
 chrome.browserAction.onClicked.addListener(function(tab) { 
   chrome.windows.create(
-      {url: "app.html", type: "popup", width: 500, height: 800});
+      {url: "app.html", type: "popup", width: 500, height: 800}
+      , function(newWin) {
+        
+      });
 });
 
 function createNewUpdate(info, tab) {
@@ -29,7 +32,6 @@ var menuCreateNewUpdate = chrome.contextMenus.create(
 var menuAbout = chrome.contextMenus.create(
   {"title": "About", "contexts": ["all"], "onclick": createNewUpdate});
 
-
 var globalData = {};
 
 //////////////////////////////////////////////////
@@ -49,47 +51,47 @@ var webJson = [
       }
     ]
   }
-  ,
-  {
-    "website" : "book.qidian.com/info/1003694333"
-    ,"rulesTitle" : {
-      "webRulesKey" : "head"
-      ,"webRulesKey2" : "title"
-    }
-    , "rules" : [
-      {
-        "ruleKey" : "data-eid"
-        ,"ruleObj" : "qd_G19"
-      }
-    ]
-  }
-  ,
-  {
-    "website" : "book.qidian.com/info/1004608738"
-    ,"rulesTitle" : {
-      "webRulesKey" : "head"
-      ,"webRulesKey2" : "title"
-    }
-    , "rules" : [
-      {
-        "ruleKey" : "data-eid"
-        ,"ruleObj" : "qd_G19"
-      }
-    ]
-  }
-  ,{
-    "website" : "book.qidian.com/info/3638453"
-    ,"rulesTitle" : {
-      "webRulesKey" : "head"
-      ,"webRulesKey2" : "title"
-    }
-    , "rules" : [
-      {
-        "ruleKey" : "data-eid"
-        ,"ruleObj" : "qd_G19"
-      }
-    ]
-  }
+  // ,
+  // {
+  //   "website" : "book.qidian.com/info/1003694333"
+  //   ,"rulesTitle" : {
+  //     "webRulesKey" : "head"
+  //     ,"webRulesKey2" : "title"
+  //   }
+  //   , "rules" : [
+  //     {
+  //       "ruleKey" : "data-eid"
+  //       ,"ruleObj" : "qd_G19"
+  //     }
+  //   ]
+  // }
+  // ,
+  // {
+  //   "website" : "book.qidian.com/info/1004608738"
+  //   ,"rulesTitle" : {
+  //     "webRulesKey" : "head"
+  //     ,"webRulesKey2" : "title"
+  //   }
+  //   , "rules" : [
+  //     {
+  //       "ruleKey" : "data-eid"
+  //       ,"ruleObj" : "qd_G19"
+  //     }
+  //   ]
+  // }
+  // ,{
+  //   "website" : "book.qidian.com/info/3638453"
+  //   ,"rulesTitle" : {
+  //     "webRulesKey" : "head"
+  //     ,"webRulesKey2" : "title"
+  //   }
+  //   , "rules" : [
+  //     {
+  //       "ruleKey" : "data-eid"
+  //       ,"ruleObj" : "qd_G19"
+  //     }
+  //   ]
+  // }
 ];
 
 //////////////////////////////////////////////////
@@ -137,12 +139,11 @@ class WebPage{
     this.website = website;
     this.rules = rules;
     this.webRulesTitle = webRulesTitle;
-    this.requestCrossDomain();
-    this.handleUpdateSource();
+    this.setupAlarm();
+    this.setupSourceListener();
   }
 
   requestCrossDomain() {
-    
     // If no url was passed, exit.
     if ( !this.website ) {
       console.log('No site was passed.');
@@ -260,6 +261,70 @@ class WebPage{
       }
     }
   }
+
+  checkIfUrlExist(url) {
+    if (!url) { return -1; }
+      chrome.tabs.query({},function(tabs){     
+        tabs.forEach(function(tab){
+          console.log (document.URL(tab.url) + " " + document.URL(url))
+          if (document.URL(tab.url) == document.URL(url)) {
+            return tab.id;
+          }
+        });
+      });
+      return -1;
+  }
+
+  setupAlarm() {
+    /////////////////////////////////////////////////////////
+    /// Alarm timer
+    /////////////////////////////////////////////////////////
+    var reloadWebsiteAlarm = "reloadWebsiteAlarm"+this.name;
+    var that = this;
+    chrome.alarms.create(reloadWebsiteAlarm, {
+        delayInMinutes: 0,
+        periodInMinutes: 1
+    });
+
+    function newWindowsCallback(newWin) {
+      that.currentTabId = newWin.tabs[0].id;
+      var datas = {
+        "tabId" : that.currentTabId
+        ,"webName": that.name
+      }
+      
+      chrome.tabs.executeScript(that.currentTabId, {
+          code: 'var w = window; console.log(w);'
+      });
+      chrome.tabs.executeScript(that.currentTabId, {
+          code: 'var datas = ' + JSON.stringify(datas)
+      }, function() {
+          chrome.tabs.executeScript(that.currentTabId, {file: "getPagesSource.js"});
+      });
+    }
+
+    chrome.alarms.onAlarm.addListener(function(alarm) {
+        if (alarm.name === reloadWebsiteAlarm) {
+          // this.requestCrossDomain();
+          that.checkIfUrlExist(that.website);
+          chrome.windows.create(
+            {url: "http://"+that.website, type: "popup", state : "minimized"}, newWindowsCallback);
+        }
+    });
+  }
+
+  setupSourceListener() {
+    var that = this;
+    chrome.runtime.onMessage.addListener(function(request, sender) {
+      if (request.action == "getSource"+that.name) {
+        if(request.source && request.source.datas && request.source.datas.tabId) {
+          //console.log( request.source.datas);
+          // TODO : add handle to html sources
+          chrome.tabs.remove(request.source.datas.tabId);
+        }
+      }
+    });
+  }
 }
 
 window.addEventListener("updateSource", function(e) {
@@ -308,20 +373,3 @@ function renewJson() {
 globalData.webJson = webJson;
 globalData.websites = parseWebsites(webJson);
 
-/////////////////////////////////////////////////////////
-/// Alarm timer
-/////////////////////////////////////////////////////////
-var reloadWebsiteAlarm = "reloadWebsiteAlarm";
-
-chrome.alarms.create(reloadWebsiteAlarm, {
-    delayInMinutes: 0,
-    periodInMinutes: 1
-});
-
-chrome.alarms.onAlarm.addListener(function(alarm) {
-    if (alarm.name === reloadWebsiteAlarm) {
-        for (var w in globalData.websites) {
-         globalData.websites[w].requestCrossDomain();
-        }
-    }
-});
