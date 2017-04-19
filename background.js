@@ -129,6 +129,37 @@ var JsonAction = function(jsonObj, actionFunction) {
   }
 }
 
+class WebInTab {
+  constructor (url) {
+    this.url = url;
+    this.tabId = -1;
+
+    this.checkIfUrlExistInTabs();
+
+    chrome.tabs.onCreated.addListener(this.checkIfUrlExistInTabs);
+    chrome.tabs.onUpdated.addListener(this.checkIfUrlExistInTabs);
+    chrome.tabs.onRemoved.addListener(this.checkIfUrlExistInTabs);
+  }
+
+  checkIfUrlExistInTabs() {
+    if (!this.url) { this.tabId = -1; }
+    var prefix = /^https?:\/\//;
+    var url = this.url.replace(prefix, "");
+    var that = this;
+    chrome.tabs.query({},function(tabs){     
+      tabs.forEach(function(tab){
+        var tabUrl = tab.url.replace(prefix, "");
+        if (url === tabUrl) {
+          console.log (tab.id + " ::: " + url + " ::: " + tabUrl);
+          that.tabId = tab.id;
+          return;
+        }
+      });
+    });
+    this.tabId = -1;
+  }
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 /// Webpage handler
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -139,6 +170,7 @@ class WebPage{
     this.website = website;
     this.rules = rules;
     this.webRulesTitle = webRulesTitle;
+    this.webInTab = new WebInTab(this.website);
     this.setupAlarm();
     this.setupSourceListener();
   }
@@ -262,18 +294,7 @@ class WebPage{
     }
   }
 
-  checkIfUrlExist(url) {
-    if (!url) { return -1; }
-      chrome.tabs.query({},function(tabs){     
-        tabs.forEach(function(tab){
-          console.log (document.URL(tab.url) + " " + document.URL(url))
-          if (document.URL(tab.url) == document.URL(url)) {
-            return tab.id;
-          }
-        });
-      });
-      return -1;
-  }
+
 
   setupAlarm() {
     /////////////////////////////////////////////////////////
@@ -286,8 +307,7 @@ class WebPage{
         periodInMinutes: 1
     });
 
-    function newWindowsCallback(newWin) {
-      that.currentTabId = newWin.tabs[0].id;
+    function reloadTabCallback() {
       var datas = {
         "tabId" : that.currentTabId
         ,"webName": that.name
@@ -302,13 +322,24 @@ class WebPage{
           chrome.tabs.executeScript(that.currentTabId, {file: "getPagesSource.js"});
       });
     }
+    function newTabCallback(newTab) {
+      that.currentTabId = newTab.id;
+      reloadTabCallback();
+    }
 
     chrome.alarms.onAlarm.addListener(function(alarm) {
         if (alarm.name === reloadWebsiteAlarm) {
           // this.requestCrossDomain();
-          that.checkIfUrlExist(that.website);
-          chrome.windows.create(
-            {url: "http://"+that.website, type: "popup", state : "minimized"}, newWindowsCallback);
+          var currentTabId = that.webInTab.tabId;
+          console.log ("webInTab : " + currentTabId );
+          if (currentTabId > 0) {
+            chrome.tabs.reload(currentTabId, reloadTabCallback);
+          }
+          else {
+            //chrome.tabs.create({url: "http://"+that.website}, newTabCallback);
+          }
+          // chrome.windows.create({url: "http://"+that.website, type: "popup", state : "minimized"}, newWindowsCallback);
+          
         }
     });
   }
@@ -320,7 +351,7 @@ class WebPage{
         if(request.source && request.source.datas && request.source.datas.tabId) {
           //console.log( request.source.datas);
           // TODO : add handle to html sources
-          chrome.tabs.remove(request.source.datas.tabId);
+          // chrome.tabs.remove(request.source.datas.tabId);
         }
       }
     });
