@@ -5,31 +5,6 @@
  * Date : April 19, 2017
  * Lisence : Apache License Version 2.0, January 2004 http://www.apache.org/licenses/
  */
-/////////////////////////////////////////////////////////////////////////////////////////
-/// Json Manipulations : add action methods
-/////////////////////////////////////////////////////////////////////////////////////////
-var JsonManipulations = (function (resultModule) {
-  //// Public methods:
-  resultModule.jsonGetRequired = function(jsonObj, key) {
-    for (var i in that.rules) {
-      var rule = that.rules[i];
-      if (!(key === rule.ruleKey && jsonObj[key] == rule.ruleObj)) {
-        return null;
-      }
-    }
-    return jsonObj;
-  }
-
-  resultModule.jsonGetTitle = function(jsonObj, key) {
-    if (key === that.webRulesTitle.webRulesKey) {
-      var head = jsonObj[key];
-      return head[that.webRulesTitle.webRulesKey2];
-    }
-    return null;
-  }
-
-  return resultModule;
-}(JsonManipulations));
 
 /////////////////////////////////////////////////////////////////////////////////////////
 /// Webpage handler
@@ -107,11 +82,10 @@ class WebPage{
 
   handleUpdateSource(handlingJson) {
    var that = this;
-
-    var getJson = JsonManipulations.jsonAction(handlingJson, JsonManipulations.jsonGetRequired);
+    var getJson = JsonManipulations.jsonAction(handlingJson, jsonGetRequired);
     
     if (!this.webRulesName) {
-      var getTitleJson = JsonManipulations.jsonAction(e.data, JsonManipulations.jsonGetTitle);
+      var getTitleJson = JsonManipulations.jsonAction(handlingJson, jsonGetTitle);
       this.webRulesName = getTitleJson.manipulatedItems[0];
     }
 
@@ -120,18 +94,18 @@ class WebPage{
     if (!this.lastGetNeededJson || this.getNeededJson != this.lastGetNeededJson) {
       this.lastGetNeededJson = this.getNeededJson;
       var options = {
-        "type" : "list"
+        "type" : "basic"
         ,"title": "Webpage Update Notifier"
-        ,"message": "New updates : " + this.event.data.objName // Not using
-        ,"expandedMessage": "Go to : " + this.event.data.website// Not using
+        ,"message": "New updates : "// + this.event.data.objName // Not using
+        ,"expandedMessage": "Go to : "// + this.event.data.website// Not using
         ,"iconUrl" : "icon.png"
         ,"requireInteraction" : true // so it wont close for default 5 sec until i set so
-        ,"items": [
-          { title: "New updates!", message: "Click to open."}
-          ,{ title: that.webRulesName, message: ""}
-          ,{ title: "", message: this.lastGetNeededJson}
-          
-        ]
+        // TODO
+        // ,"items": [
+        //   { "title": "New updates!", "message": "Click to open."}
+        //   ,{ "title": that.webRulesName, "message": ""}
+        //   ,{ "title": "", "message": this.lastGetNeededJson}
+        // ]
       }
       var nid = "nid" + Math.floor(Math.random() * 999999);
       that.nid = nid;
@@ -158,6 +132,24 @@ class WebPage{
       if (chrome.runtime.lastError) {
           console.log(chrome.runtime.lastError.message);
       }
+    }
+
+    function jsonGetRequired(jsonObj, key) {
+      for (var i in that.rules) {
+        var rule = that.rules[i];
+        if (!(key === rule.ruleKey && jsonObj[key] == rule.ruleObj)) {
+          return null;
+        }
+      }
+      return jsonObj;
+    }
+
+    function jsonGetTitle(jsonObj, key) {
+      if (key === that.webRulesTitle.webRulesKey) {
+        var head = jsonObj[key];
+        return head[that.webRulesTitle.webRulesKey2];
+      }
+      return null;
     }
   }
 }

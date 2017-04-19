@@ -43,7 +43,7 @@ class WebInTab {
     chrome.tabs.query({},function(tabs){     
       tabs.forEach(function(tab){
         if (that.compareUrls(url, tab.url)) {
-          console.log (tab.id + " ::: " + url + " ::: " + tab.url);
+          // console.log (tab.id + " ::: " + url + " ::: " + tab.url);
           that.tabId = tab.id;
           return;
         }
