@@ -16,8 +16,8 @@ function parseWebsites(webJson) {
   var result = [];
   for ( var i in webJson ) {
     var web = webJson[i];
-    if ( web.website && web.rulesTitle && web.rules) {
-      var newWeb = new WebPage(web.website , web.rulesTitle , web.rules);
+    if ( web.website && web.rules) {
+      var newWeb = new WebPage(web.website , web.rules);
       result.push(newWeb);
     }
   }

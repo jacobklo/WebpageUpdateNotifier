@@ -11,12 +11,11 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 
 class WebPage{
-  constructor(website, webRulesTitle, rules) {
+  constructor(website, rules) {
     this.name = "name"+Math.floor(Math.random() * 99999);
     this.website = website;
-    this.rules = rules;
-    this.webRulesTitle = webRulesTitle;
     this.webInTab = new WebInTab(this.website);
+    this.rules = rules;
     this.setupAlarm();
     this.setupSourceListener();
   }
@@ -51,7 +50,6 @@ class WebPage{
 
     chrome.alarms.onAlarm.addListener(function(alarm) {
         if (alarm.name === reloadWebsiteAlarm) {
-          // this.requestCrossDomain();
           that.currentTabId = that.webInTab.tabId;
           if (that.currentTabId > 0) {
             chrome.tabs.reload(that.currentTabId, reloadTabCallback);
@@ -84,54 +82,24 @@ class WebPage{
    var that = this;
     var getJson = JsonManipulations.jsonAction(handlingJson, jsonGetRequired);
     
-    if (!this.webRulesName) {
+    if (!this.webTitle) {
       var getTitleJson = JsonManipulations.jsonAction(handlingJson, jsonGetTitle);
-      this.webRulesName = getTitleJson.manipulatedItems[0];
+      this.webTitle = getTitleJson.manipulatedItems;
     }
-
+    
+    // TODO : rewrite to handle adblock UI blue box for selection html element wrap
     this.getNeededJson = getJson.manipulatedItems[0]["title"];
-    console.log ("Old : " + this.lastGetNeededJson + " - New : " + this.getNeededJson);
+    
     if (!this.lastGetNeededJson || this.getNeededJson != this.lastGetNeededJson) {
+      console.log ("Old : " + this.lastGetNeededJson + " - New : " + this.getNeededJson);
+    
       this.lastGetNeededJson = this.getNeededJson;
-      var options = {
-        "type" : "basic"
-        ,"title": "Webpage Update Notifier"
-        ,"message": "New updates : "// + this.event.data.objName // Not using
-        ,"expandedMessage": "Go to : "// + this.event.data.website// Not using
-        ,"iconUrl" : "icon.png"
-        ,"requireInteraction" : true // so it wont close for default 5 sec until i set so
-        // TODO
-        // ,"items": [
-        //   { "title": "New updates!", "message": "Click to open."}
-        //   ,{ "title": that.webRulesName, "message": ""}
-        //   ,{ "title": "", "message": this.lastGetNeededJson}
-        // ]
+      var notificationSettings = {
+        "webTitle" : this.webTitle
+        ,"lastGetNeededJson" : this.lastGetNeededJson
+        ,"website" : this.website
       }
-      var nid = "nid" + Math.floor(Math.random() * 999999);
-      that.nid = nid;
-      chrome.notifications.create(nid, options , creationNotificationCallback);
-    }
-
-    function creationNotificationCallback(id) {
-        chrome.notifications.onClicked.addListener( function (id) {
-            if (that.nid === id) {
-                chrome.tabs.create({
-                    "url" : "http://" + that.website
-                    ,"active" : true
-                }, creationCallback);
-            }
-        });
-        setTimeout(function() {
-            chrome.notifications.clear(id, function(wasCleared) {
-                
-            });
-        }, 20000);
-    }
-
-    function creationCallback(notID) {
-      if (chrome.runtime.lastError) {
-          console.log(chrome.runtime.lastError.message);
-      }
+      UIHandler.createNotification(notificationSettings);
     }
 
     function jsonGetRequired(jsonObj, key) {
@@ -145,9 +113,15 @@ class WebPage{
     }
 
     function jsonGetTitle(jsonObj, key) {
-      if (key === that.webRulesTitle.webRulesKey) {
-        var head = jsonObj[key];
-        return head[that.webRulesTitle.webRulesKey2];
+      if (key === 'tag' && jsonObj[key] === 'head') {
+        var head = jsonObj['child'];
+        for (var h in head) {
+          var node = head[h];
+          if (node['tag'] === 'title') {
+            var title = node['child'][0];
+            return title.text;
+          }
+        }
       }
       return null;
     }

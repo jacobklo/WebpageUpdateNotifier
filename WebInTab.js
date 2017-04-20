@@ -15,6 +15,18 @@ class WebInTab {
     chrome.tabs.onRemoved.addListener(function (tabId) {
       that.doRemove(tabId);
     });
+
+    var rechecktabAlarm = "rechecktabAlarm"+Math.floor(Math.random()*99999);
+    var that = this;
+    chrome.alarms.create(rechecktabAlarm, {
+        delayInMinutes: 0,
+        periodInMinutes: 2
+    });
+    chrome.alarms.onAlarm.addListener(function(alarm) {
+      if (alarm.name === rechecktabAlarm) {
+        that.checkIfUrlExistInTabs(that.url);
+      }
+    });
   }
 
   doCreate(tab) {

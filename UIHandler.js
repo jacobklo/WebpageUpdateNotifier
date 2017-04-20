@@ -38,6 +38,46 @@ var UIHandler = (function() {
   };
 
   //// Public Methods
-  
+  resultModule.createNotification = function(settings) {
+    var options = {
+        "type" : "list"
+        ,"title": "Webpage Update Notifier"
+        ,"message": "New updates : "  // Not using
+        ,"expandedMessage": "Go to : " // Not using
+        ,"iconUrl" : "icon.png"
+        ,"requireInteraction" : true // so it wont close for default 5 sec until i set so
+        ,"items": [
+          { "title": "New updates!", "message": "Click to open."}
+          ,{ "title": ""+settings.webTitle, "message": ""}
+          ,{ "title": "", "message": ""+settings.lastGetNeededJson}
+        ]
+      }
+      var nid = "nid" + Math.floor(Math.random() * 999999);
+      chrome.notifications.create(nid, options , creationNotificationCallback);
+
+      function creationNotificationCallback(id) {
+        chrome.notifications.onClicked.addListener( function (id) {
+            if (nid === id) {
+                chrome.tabs.create({
+                    "url" : "http://" + settings.website
+                    ,"active" : true
+                }, creationCallback);
+            }
+        });
+        setTimeout(function() {
+            chrome.notifications.clear(id, function(wasCleared) {
+                
+            });
+        }, 2000);
+      }
+
+      function creationCallback(notID) {
+        if (chrome.runtime.lastError) {
+            console.log(chrome.runtime.lastError.message);
+        }
+      }
+
+  };
+
   return resultModule;
 }());
