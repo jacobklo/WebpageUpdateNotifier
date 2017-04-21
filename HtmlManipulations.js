@@ -14,16 +14,17 @@ var HtmlManipulations = (function () {
 	var resultModule = {};
 
 	/// Private members
-	function subHtmlAction(htmlObj, actionFunction, manipulatedItems) {
-		if (!htmlObj || !actionFunction) { return {};}
+	function subHtmlAction(htmlString, actionFunction, manipulatedItems) {
+		if (!htmlString || !actionFunction) { return {};}
 
-		// TODO : In order transversal
+		// TODO : Depth-First Search , pre-order
+		
 	}
 
 	/// public methods
-	resultModule.htmlAction = function(htmlObj, actionFunction) {
+	resultModule.htmlAction = function(htmlString, actionFunction) {
 		var manipulatedItems = [];
-		var result = subHtmlAction(htmlObj, actionFunction, manipulatedItems);
+		var result = subHtmlAction(htmlString, actionFunction, manipulatedItems);
 		return {
 			manipulatedItems : manipulatedItems
 			, result : result
