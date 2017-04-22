@@ -8,38 +8,52 @@
 
 var globalData = {};
 
-/////////////////////////////////////////////////////////////////////////////////////////
-/// Start of background handler, loading default websites json
-/////////////////////////////////////////////////////////////////////////////////////////
+require(['./common'], function() {
+  require(['js/background/loadLib'], function() {
+    require(['js/background/loadUtil'], function() {
+      require(['js/background/loadBackground'], function() {
 
-function parseWebsites(webJson) {
-  var result = [];
-  for ( var i in webJson ) {
-    var web = webJson[i];
-    if ( web.website && web.rules) {
-      var newWeb = new WebPage(web.website , web.rules);
-      result.push(newWeb);
-    }
-  }
-  return result;
-}
+        /////////////////////////////////////////////////////////////////////////////////////////
+        /// Start of background handler, loading default websites json
+        /////////////////////////////////////////////////////////////////////////////////////////
 
-function parseJson(webJsonString) {
-  if (!webJsonString) { return null; }
-  var webJson = JSON.parse(webJsonString);
-  if (!webJson) { return null; }
-  if (webJson.constructor !== Array ) { return null; }
-  return webJson;
-}
+        function parseWebsites(webJson) {
+          var result = [];
+          for ( var i in webJson ) {
+            var web = webJson[i];
+            if ( web.website && web.rules) {
+              var newWeb = new WebPage(web.website , web.rules);
+              result.push(newWeb);
+            }
+          }
+          return result;
+        }
 
-function renewJson() {
+        function parseJson(webJsonString) {
+          if (!webJsonString) { return null; }
+          var webJson = JSON.parse(webJsonString);
+          if (!webJson) { return null; }
+          if (webJson.constructor !== Array ) { return null; }
+          return webJson;
+        }
 
-  var newJson = parseJson(globalData.webJson);
-  if (newJson) {
-    globalData.websites = parseWebsites(newJson);
-  }
-}
+        function renewJson() {
 
-globalData.webJson = webJson;
-globalData.websites = parseWebsites(webJson);
+          var newJson = parseJson(globalData.webJson);
+          if (newJson) {
+            globalData.websites = parseWebsites(newJson);
+          }
+        }
 
+        globalData.webJson = webJson;
+        globalData.websites = parseWebsites(webJson);
+
+
+
+      });
+
+    });
+  });
+
+
+});

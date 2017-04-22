@@ -6,8 +6,12 @@
 //except for 'app' ones, which are in a sibling
 //directory.
 requirejs.config({
-    baseUrl: 'js/lib',
+    baseUrl: chrome.extension.getURL("/"),
     paths: {
         app: '../app'
     }
 });
+
+require(['js/lib/jQuery.min']);
+
+console.log ("common loaded");

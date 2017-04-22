@@ -31,9 +31,12 @@ function DOMtoString(document_root) {
         }
 }
 
-if (datas.webName) {
-    chrome.runtime.sendMessage({
-        action: "getSource"+datas.webName,
-        source: DOMtoString(document)
-    });
+if (datas) {
+    if (datas.webName) {
+        chrome.runtime.sendMessage({
+            action: "getSource"+datas.webName,
+            source: DOMtoString(document)
+        });
+    }
 }
+

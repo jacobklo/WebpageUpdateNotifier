@@ -19,16 +19,16 @@ var webJson = [
       }
     ]
   }
-  ,
-  {
-    "website" : "book.qidian.com/info/1003694333"
-    , "rules" : [
-      {
-        "ruleKey" : "data-eid"
-        ,"ruleObj" : "qd_G19"
-      }
-    ]
-  }
+  // ,
+  // {
+  //   "website" : "book.qidian.com/info/1003694333"
+  //   , "rules" : [
+  //     {
+  //       "ruleKey" : "data-eid"
+  //       ,"ruleObj" : "qd_G19"
+  //     }
+  //   ]
+  // }
   // ,
   // {
   //   "website" : "book.qidian.com/info/1004608738"

@@ -40,7 +40,7 @@ class WebPage{
       chrome.tabs.executeScript(that.currentTabId, {
           code: 'var datas = ' + JSON.stringify(datas)
       }, function() {
-          chrome.tabs.executeScript(that.currentTabId, {file: "getPagesSource.js"});
+          chrome.tabs.executeScript(that.currentTabId, {file: "js/lib/getPagesSource.js"});
       });
     }
     function newTabCallback(newTab) {
@@ -55,7 +55,7 @@ class WebPage{
             chrome.tabs.reload(that.currentTabId, reloadTabCallback);
           }
           else {
-            chrome.tabs.create({url: "http://"+that.website, active : false}, newTabCallback);
+            // chrome.tabs.create({url: "http://"+that.website, active : false}, newTabCallback);
           }
           // chrome.windows.create({url: "http://"+that.website, type: "popup", state : "minimized"}, newWindowsCallback);
           
