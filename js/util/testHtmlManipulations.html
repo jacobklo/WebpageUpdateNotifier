@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+<script src="HtmlManipulations.js"></script>
+
+<script>
+
+$(document).ready(function(){
+  var htmlString = '<html><head><title>Hello sdfdsfdf</title></head><body><p>a</p></body></html>';
+    
+  var getHandledHtml = HtmlManipulations.htmlAction(htmlString, HtmlManipulations.htmlGetTitle);
+  console.log (getHandledHtml.manipulatedItems);
+  $('.titleP').text(getHandledHtml.manipulatedItems[0]);
+
+});
+</script>
+</head>
+<body>
+
+<p class="titleP"></p>
+
+</body>
+</html>

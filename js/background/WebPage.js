@@ -81,14 +81,12 @@ class WebPage{
   }
 
   handleUpdateHtml(handlingHtml){
-    var getHtml = HtmlManipulations.htmlAction(handlingHtml, htmlGetTitle);
-    
-    function htmlGetTitle($htmlObj) {
-      if (HtmlManipulations.$('title').length > 0) {
-        return $htmlObj;
-      }
-      return null;
+    if (!this.webTitle) {
+      var getHtml = HtmlManipulations.htmlAction(handlingHtml, HtmlManipulations.htmlGetTitle);
+      this.webTitle = getHtml.manipulatedItems[0];
+      console.log (this.webTitle);
     }
+
   }
 
   handleUpdateSource(handlingJson) {

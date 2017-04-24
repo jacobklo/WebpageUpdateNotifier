@@ -13,5 +13,3 @@ requirejs.config({
 });
 
 require(['js/lib/jQuery.min']);
-
-console.log ("common loaded");

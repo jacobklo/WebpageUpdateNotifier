@@ -2,7 +2,7 @@
  * Webpage Updates Notifier
  * Version : v0.1
  * Author : Jacob Lo
- * Date : April 20, 2017
+ * Date : April 24, 2017
  * Lisence : Apache License Version 2.0, January 2004 http://www.apache.org/licenses/
  */
 
@@ -14,45 +14,44 @@ var HtmlManipulations = (function ($) {
 	var resultModule = {};
 
 	/// Private members
-	function subHtmlAction(htmlString, actionFunction, manipulatedItems) {
-		if (!$htmlObj || !actionFunction) { return {};}
+	function subHtmlAction(htmlElement, actionFunction, manipulatedItems) {
+		if (!htmlElement || !actionFunction) { return {};}
 
-		var $htmlObj = $("<div></div>");
-    $htmlObj.append(htmlString);
-    
-		if ($htmlObj.next().length > 0) {
-			while ($htmlObj.next().length > 0) {
-				$.each($htmlObj.siblings(), function (index, value) {
-	  			subHtmlAction(value.html(), actionFunction, manipulatedItems);
-	  			console.log (value.html());
-	  		});
-			}
-		}
-		else {
-			var doAction = actionFunction($htmlObj);
-      if (doAction) {
-        manipulatedItems.push(doAction);
-      }
-      var children = $htmlObj.children();
-      while (children.next().length > 0) {
-      	subHtmlAction(children.next().html(), actionFunction, manipulatedItems);
-      }
-		}
+		var $htmlObj = $(htmlElement);
 
-		return $htmlObj;
+		var doAction = actionFunction(htmlElement);
+		if (doAction) {
+			manipulatedItems.push(doAction);
+		}
+		$htmlObj.children().each(function (index, value) {
+			subHtmlAction(value, actionFunction, manipulatedItems);
+		});
+
+		return htmlElement;
 	}
 
 	/// public methods
-	resultModule.$ = $;
-
 	resultModule.htmlAction = function(htmlString, actionFunction) {
 		var manipulatedItems = [];
-		console.log ("htmlAction");
-		var result = subHtmlAction(htmlString, actionFunction, manipulatedItems);
+
+		var $htmlEle = $("<html/>").html(htmlString);
+		$htmlEle = $htmlEle.get()[0];
+		
+		var result = subHtmlAction($htmlEle, actionFunction, manipulatedItems);
 		return {
 			manipulatedItems : manipulatedItems
 			, result : result
 		}
 	};
+
+	// sample usage
+	resultModule.htmlGetTitle = function(htmlElement) {
+		var $htmlObj = $(htmlElement);
+		if ($htmlObj.prop("tagName").toUpperCase() == "TITLE") {
+			return $htmlObj.text();
+		}
+		return null;
+	}
+
 	return resultModule;
 }(jQuery));
