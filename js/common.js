@@ -8,7 +8,7 @@
 requirejs.config({
     baseUrl: chrome.extension.getURL("/"),
     paths: {
-        app: '../app'
+        app: '../background'
     }
 });
 

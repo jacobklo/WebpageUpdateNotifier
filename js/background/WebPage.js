@@ -70,12 +70,25 @@ class WebPage{
         if(request.source && request.source.datas && request.source.datas.tabId) {
           // chrome.tabs.remove(request.source.datas.tabId);
           
-          var requiredJsonPage = html2json(request.source.html);
+          // var requiredJsonPage = html2json(request.source.html);
           
-          that.handleUpdateSource(requiredJsonPage);
+          // that.handleUpdateSource(requiredJsonPage);
+          
+          that.handleUpdateHtml(request.source.html);
         }
       }
     });
+  }
+
+  handleUpdateHtml(handlingHtml){
+    var getHtml = HtmlManipulations.htmlAction(handlingHtml, htmlGetTitle);
+    
+    function htmlGetTitle($htmlObj) {
+      if (HtmlManipulations.$('title').length > 0) {
+        return $htmlObj;
+      }
+      return null;
+    }
   }
 
   handleUpdateSource(handlingJson) {

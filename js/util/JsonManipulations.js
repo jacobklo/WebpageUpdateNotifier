@@ -10,7 +10,7 @@
 /// Json Manipulations
 /// Use Module Pattern : http://www.adequatelygood.com/JavaScript-Module-Pattern-In-Depth.html
 //////////////////////////////////////////////////
-var JsonManipulations = (function () {
+var JsonManipulations = (function ($) {
   var resultModule = {};
   //// Private members:
   function subJsonAction(jsonObj, actionFunction, manipulatedItems) {
@@ -47,4 +47,4 @@ var JsonManipulations = (function () {
   };
 
   return resultModule;
-}());
+}(jQuery));

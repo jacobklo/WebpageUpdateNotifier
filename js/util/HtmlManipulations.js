@@ -10,20 +10,44 @@
 /// HTML Manipulations
 //////////////////////////////////////////////////
 
-var HtmlManipulations = (function () {
+var HtmlManipulations = (function ($) {
 	var resultModule = {};
 
 	/// Private members
 	function subHtmlAction(htmlString, actionFunction, manipulatedItems) {
-		if (!htmlString || !actionFunction) { return {};}
+		if (!$htmlObj || !actionFunction) { return {};}
 
-		// TODO : Depth-First Search , pre-order
-		
+		var $htmlObj = $("<div></div>");
+    $htmlObj.append(htmlString);
+    
+		if ($htmlObj.next().length > 0) {
+			while ($htmlObj.next().length > 0) {
+				$.each($htmlObj.siblings(), function (index, value) {
+	  			subHtmlAction(value.html(), actionFunction, manipulatedItems);
+	  			console.log (value.html());
+	  		});
+			}
+		}
+		else {
+			var doAction = actionFunction($htmlObj);
+      if (doAction) {
+        manipulatedItems.push(doAction);
+      }
+      var children = $htmlObj.children();
+      while (children.next().length > 0) {
+      	subHtmlAction(children.next().html(), actionFunction, manipulatedItems);
+      }
+		}
+
+		return $htmlObj;
 	}
 
 	/// public methods
+	resultModule.$ = $;
+
 	resultModule.htmlAction = function(htmlString, actionFunction) {
 		var manipulatedItems = [];
+		console.log ("htmlAction");
 		var result = subHtmlAction(htmlString, actionFunction, manipulatedItems);
 		return {
 			manipulatedItems : manipulatedItems
@@ -31,4 +55,4 @@ var HtmlManipulations = (function () {
 		}
 	};
 	return resultModule;
-}());
+}(jQuery));
