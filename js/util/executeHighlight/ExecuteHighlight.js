@@ -53,7 +53,8 @@ var Highlighter = (function ($) {
       box.show();
       return;
     }
-    if (el === document.body || el.className === "adblock-killme-overlay") {
+    console.log (el.id);
+    if (el === document.body || el.className === "selectDialog" || el.className === "selectDialogInfo") {
       box.hide();
       return;
     }
@@ -73,4 +74,22 @@ var Highlighter = (function ($) {
   return resultModule;
 }(jQuery));
 
-Highlighter.enable();
+var ClickWatcher = (function ($) {
+  
+  var resultModule = {};
+
+  resultModule.show = function() {
+    console.log ("ClickWatcher.show()");
+    var selectDialogInfo = $("<p/>")
+      .attr("class", "selectDialogInfo")
+      .text("Select a element in this web page, We will help you monitor that element to see if it has updates");
+    var selectDialog = $("<div/>")
+      .attr("class", "selectDialog")
+      .attr("title", "Select a element you want to monitor")
+      .append(selectDialogInfo)
+      .dialog();
+  };
+
+  return resultModule;
+}(jQuery));
+

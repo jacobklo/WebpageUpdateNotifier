@@ -25,14 +25,16 @@ var UIHandler = (function() {
 
   //// Private Methods
   function createNewUpdate(info, tab) {
-    chrome.tabs.insertCSS(tab.id, {
-      file: '/js/background/box.css'
-    });
-    chrome.tabs.executeScript(tab.id, {
-      file: '/js/lib/jQuery.min.js'
-    });
-    chrome.tabs.executeScript(tab.id, {
-      file: '/js/util/executeHighlight.js'
+    chrome.tabs.executeScript(tab.id, { file: '/js/lib/jQuery/jQuery.js' }, function() {
+      chrome.tabs.insertCSS(tab.id, { file: '/js/lib/jQuery/jquery-ui.css' }, function() {
+        chrome.tabs.executeScript(tab.id, { file: '/js/lib/jQuery/jquery-ui.js' }, function() {
+          chrome.tabs.insertCSS(tab.id, { file: '/js/background/box.css' }, function() {
+            chrome.tabs.executeScript(tab.id, { file: '/js/util/executeHighlight/ExecuteHighlight.js' }, function() {
+              chrome.tabs.executeScript(tab.id, { code : 'Highlighter.enable(); ClickWatcher.show();'});
+            });
+          });
+        });
+      });
     });
     console.log("tab: " + JSON.stringify(tab));
   };

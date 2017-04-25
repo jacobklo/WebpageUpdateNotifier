@@ -12,4 +12,5 @@ requirejs.config({
     }
 });
 
-require(['js/lib/jQuery.min']);
+require(['js/lib/jQuery/jQuery']);
+require(['js/lib/jQuery/jQuery-ui']);
