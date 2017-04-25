@@ -5,31 +5,33 @@
 // Highlight DOM elements with an overlayed box, similar to Webkit's inspector.
 // Creates an absolute-positioned div that is translated & scaled following
 // mousemove events. Holds a pointer to target DOM element.
-function Highlighter() {
+var Highlighter = (function ($) {
+  var resultModule = {};
+
   var target = null;
   var enabled = false;
   var then = Date.now();
   var box = $("<div class='adblock-highlight-node'></div>");
   box.appendTo("body");
 
-  this.getCurrentNode = function(el) {
+  resultModule.getCurrentNode = function(el) {
     return el === box[0] ? target : el;
   };
-  this.enable = function() {
+  resultModule.enable = function() {
     if (box && !enabled) {
       $("body").bind("mousemove", handler);
     }
     enabled = true;
   };
-  this.disable = function() {
+  resultModule.disable = function() {
     if (box && enabled) {
       box.hide();
       $("body").unbind("mousemove", handler);
     }
     enabled = false;
   };
-  this.destroy = function() {
-    this.disable();
+  resultModule.destroy = function() {
+    resultModule.disable();
     if (box) {
       box.remove();
       box = null;
@@ -67,7 +69,8 @@ function Highlighter() {
     });
     box.show();
   }
-}
 
-this._highlighter = new Highlighter();
-this._highlighter.enable();
+  return resultModule;
+}(jQuery));
+
+Highlighter.enable();

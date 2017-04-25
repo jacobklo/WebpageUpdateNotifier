@@ -26,13 +26,13 @@ var UIHandler = (function() {
   //// Private Methods
   function createNewUpdate(info, tab) {
     chrome.tabs.insertCSS(tab.id, {
-      file: 'box.css'
+      file: '/js/background/box.css'
     });
     chrome.tabs.executeScript(tab.id, {
-      file: 'jQuery.min.js'
+      file: '/js/lib/jQuery.min.js'
     });
     chrome.tabs.executeScript(tab.id, {
-      file: 'executeHighlight.js'
+      file: '/js/util/executeHighlight.js'
     });
     console.log("tab: " + JSON.stringify(tab));
   };
