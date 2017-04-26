@@ -11,13 +11,20 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 
 class WebPage{
-  constructor(website, rules) {
+  constructor(website, DOMObj) {
     this.name = "name"+Math.floor(Math.random() * 99999);
     this.website = website;
+    this.DOMObj = DOMObj;
     this.webInTab = new WebInTab(this.website);
-    this.rules = rules;
-    this.setupAlarm();
     this.setupSourceListener();
+
+    var that = this;
+    this.currentTabId = this.webInTab.checkIfUrlExistInTabs(this.website, function(tabId) {
+      if (tabId > 0) {
+        console.log (tabId);
+        that.setupAlarm();
+      }
+    });
   }
 
   setupAlarm() {
@@ -55,7 +62,8 @@ class WebPage{
             chrome.tabs.reload(that.currentTabId, reloadTabCallback);
           }
           else {
-            // chrome.tabs.create({url: "http://"+that.website, active : false}, newTabCallback);
+            console.error("It should not load here!!");
+            // chrome.tabs.create({url: that.website, active : false}, newTabCallback);
           }
           // chrome.windows.create({url: "http://"+that.website, type: "popup", state : "minimized"}, newWindowsCallback);
           
@@ -69,11 +77,7 @@ class WebPage{
       if (request.action == "getSource"+that.name) {
         if(request.source && request.source.datas && request.source.datas.tabId) {
           // chrome.tabs.remove(request.source.datas.tabId);
-          
-          // var requiredJsonPage = html2json(request.source.html);
-          
-          // that.handleUpdateSource(requiredJsonPage);
-          
+           
           that.handleUpdateHtml(request.source.html);
         }
       }
@@ -89,54 +93,7 @@ class WebPage{
 
   }
 
-  handleUpdateSource(handlingJson) {
-   var that = this;
-    var getJson = JsonManipulations.jsonAction(handlingJson, jsonGetRequired);
-    
-    if (!this.webTitle) {
-      var getTitleJson = JsonManipulations.jsonAction(handlingJson, jsonGetTitle);
-      this.webTitle = getTitleJson.manipulatedItems;
-    }
-    
-    // TODO : rewrite to handle adblock UI blue box for selection html element wrap
-    this.getNeededJson = getJson.manipulatedItems[0]["title"];
-    
-    if (!this.lastGetNeededJson || this.getNeededJson != this.lastGetNeededJson) {
-      console.log ("Old : " + this.lastGetNeededJson + " - New : " + this.getNeededJson);
-    
-      this.lastGetNeededJson = this.getNeededJson;
-      var notificationSettings = {
-        "webTitle" : this.webTitle
-        ,"lastGetNeededJson" : this.lastGetNeededJson
-        ,"website" : this.website
-      }
-      UIHandler.createNotification(notificationSettings);
-    }
-
-    function jsonGetRequired(jsonObj, key) {
-      for (var i in that.rules) {
-        var rule = that.rules[i];
-        if (!(key === rule.ruleKey && jsonObj[key] == rule.ruleObj)) {
-          return null;
-        }
-      }
-      return jsonObj;
-    }
-
-    function jsonGetTitle(jsonObj, key) {
-      if (key === 'tag' && jsonObj[key] === 'head') {
-        var head = jsonObj['child'];
-        for (var h in head) {
-          var node = head[h];
-          if (node['tag'] === 'title') {
-            var title = node['child'][0];
-            return title.text;
-          }
-        }
-      }
-      return null;
-    }
-  }
+  
 }
 
 /*
@@ -193,5 +150,54 @@ window.addEventListener("updateSource", function(e) {
     }
   }
 });
+
+handleUpdateSource(handlingJson) {
+   var that = this;
+    var getJson = JsonManipulations.jsonAction(handlingJson, jsonGetRequired);
+    
+    if (!this.webTitle) {
+      var getTitleJson = JsonManipulations.jsonAction(handlingJson, jsonGetTitle);
+      this.webTitle = getTitleJson.manipulatedItems;
+    }
+    
+    // TODO : rewrite to handle adblock UI blue box for selection html element wrap
+    this.getNeededJson = getJson.manipulatedItems[0]["title"];
+    
+    if (!this.lastGetNeededJson || this.getNeededJson != this.lastGetNeededJson) {
+      console.log ("Old : " + this.lastGetNeededJson + " - New : " + this.getNeededJson);
+    
+      this.lastGetNeededJson = this.getNeededJson;
+      var notificationSettings = {
+        "webTitle" : this.webTitle
+        ,"lastGetNeededJson" : this.lastGetNeededJson
+        ,"website" : this.website
+      }
+      UIHandler.createNotification(notificationSettings);
+    }
+
+    function jsonGetRequired(jsonObj, key) {
+      for (var i in that.rules) {
+        var rule = that.rules[i];
+        if (!(key === rule.ruleKey && jsonObj[key] == rule.ruleObj)) {
+          return null;
+        }
+      }
+      return jsonObj;
+    }
+
+    function jsonGetTitle(jsonObj, key) {
+      if (key === 'tag' && jsonObj[key] === 'head') {
+        var head = jsonObj['child'];
+        for (var h in head) {
+          var node = head[h];
+          if (node['tag'] === 'title') {
+            var title = node['child'][0];
+            return title.text;
+          }
+        }
+      }
+      return null;
+    }
+  }
 
 */

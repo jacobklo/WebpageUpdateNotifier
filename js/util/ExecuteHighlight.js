@@ -1,4 +1,22 @@
 
+var ClickWatcherEvent = (function() {
+  var resultModule = {};
+
+  resultModule.sendClickWatcherEvent = function(webUrl, DOMObj) {
+    
+    chrome.runtime.sendMessage({
+      action: "ClickWatcherEvent"
+      ,result : {
+        "webUrl" : webUrl
+        ,"DOMObj" : DOMObj
+      }
+    });
+  }
+  
+  return resultModule;
+}());
+
+
 // From Adblock, Author: Adblock's developers
 // GNU GENERAL PUBLIC LICENSE
 // 
@@ -8,25 +26,33 @@
 var Highlighter = (function ($) {
   var resultModule = {};
 
-  var target = null;
+  resultModule.target = null;
   var enabled = false;
   var then = Date.now();
-  var box = $("<div class='adblock-highlight-node'></div>");
-  box.appendTo("body");
+  var boxStyle = 
+  {
+    "background-color": "rgba(130, 180, 230, 0.5)"
+    ,"outline": "solid 1px #0F4D9A"
+    ,"box-sizing": "border-box"
+    ,"position": "absolute"
+    ,"display": "none"
+  };
+  var box = $("<div/>").css(boxStyle).appendTo("body");
+  resultModule.box = box;
 
   resultModule.getCurrentNode = function(el) {
-    return el === box[0] ? target : el;
+    return el === box[0] ? resultModule.target : el;
   };
   resultModule.enable = function() {
     if (box && !enabled) {
-      $("body").bind("mousemove", handler);
+      $("body").bind("mousemove", movehandler);
     }
     enabled = true;
   };
   resultModule.disable = function() {
     if (box && enabled) {
       box.hide();
-      $("body").unbind("mousemove", handler);
+      $("body").unbind("mousemove", movehandler);
     }
     enabled = false;
   };
@@ -39,9 +65,10 @@ var Highlighter = (function ($) {
   };
 
   // additional condition to temporary disable the box
+  resultModule.TemporaryDisableOption = false;
   resultModule.TemporaryDisablefunction = null;
 
-  function handler(e) {
+  function movehandler(e) {
     var offset, el = e.target;
     var now = Date.now();
     if (now - then < 25) {
@@ -52,7 +79,7 @@ var Highlighter = (function ($) {
       box.hide();
       el = document.elementFromPoint(e.clientX, e.clientY);
     }
-    if (el === target) {
+    if (el === resultModule.target) {
       box.show();
       return;
     }
@@ -66,7 +93,7 @@ var Highlighter = (function ($) {
     }
 
     el = $(el);
-    target = el[0];
+    resultModule.target = el[0];
     offset = el.offset();
     box.css({
       height: el.outerHeight(),
@@ -81,21 +108,7 @@ var Highlighter = (function ($) {
 }(jQuery));
 
 var ClickWatcher = (function (Highlighter, $) {
-  Highlighter.TemporaryDisable = function (x,y) {
-    var $selectDialog = $(".selectDialog");
-    var o = $selectDialog.dialog("open").closest('.ui-dialog').offset();
-    var left = o.left;
-    var right = o.left + $selectDialog.outerWidth();
-    var top = o.top;
-    var bottom = o.top + $selectDialog.outerHeight()+100;
-
-    var isXInside = x > left && x < right;
-    var isYInside = y > top && y < bottom;
-    
-    return isXInside && isYInside;
-  };
-  Highlighter.enable();
-
+  
   var resultModule = {};
 
   resultModule.show = function() {
@@ -116,6 +129,30 @@ var ClickWatcher = (function (Highlighter, $) {
           Highlighter.disable();
         }
       });
+
+      Highlighter.TemporaryDisable = function (x,y) {
+        if (!selectDialog) { return false; }
+
+        var o = selectDialog.dialog("open").closest('.ui-dialog').offset();
+        var left = o.left;
+        var right = o.left + selectDialog.outerWidth();
+        var top = o.top;
+        var bottom = o.top + selectDialog.outerHeight()+100;
+
+        var isXInside = x > left && x < right;
+        var isYInside = y > top && y < bottom;
+        
+        return isXInside && isYInside;
+      };
+      Highlighter.box.click(function(eventData) {
+        if (selectDialog) {
+          selectDialog.dialog('close');
+          Highlighter.disable();
+          ClickWatcherEvent.sendClickWatcherEvent(eventData.currentTarget.baseURI, Highlighter.target.outerHTML);
+        }
+      });
+      Highlighter.enable();
+
   };
 
   return resultModule;

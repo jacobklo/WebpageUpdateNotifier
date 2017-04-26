@@ -14,6 +14,34 @@ require(['./common'], function() {
     require(['js/background/loadUtil'], function() {
       require(['js/background/UIHandler','js/background/WebPage','defaultWebJson.js'], function() {
 
+chrome.runtime.onMessage.addListener(function(request, sender) {
+  if (request.action == "ClickWatcherEvent") {
+    if (request.result && request.result.webUrl && request.result.DOMObj) {
+      if (globalData.websites) {
+        globalData.websites.foreach(function (w) {
+          if (w.website == request.result.webUrl) {
+            w.DOMObj = request.result.DOMObj;
+            return;
+          }
+        });
+      }
+      var newWeb = new WebPage(request.result.webUrl , request.result.DOMObj);
+      if (!globalData.websites) {
+        globalData.websites = [];
+      }
+      globalData.websites.push(newWeb);
+    }
+  }
+});
+
+      });
+    });
+  });
+
+
+});
+
+/*
 /////////////////////////////////////////////////////////////////////////////////////////
 /// Start of background handler, loading default websites json
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -48,11 +76,4 @@ function renewJson() {
 
 globalData.webJson = webJson;
 globalData.websites = parseWebsites(webJson);
-
-
-      });
-    });
-  });
-
-
-});
+ */

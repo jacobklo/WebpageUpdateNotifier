@@ -1,8 +1,7 @@
 class WebInTab {
   constructor (url) {
     this.url = url;
-    this.tabId = -1;
-    this.checkIfUrlExistInTabs(this.url);
+    this.tabId = this.checkIfUrlExistInTabs(this.url, null);
 
     var that = this;
 
@@ -10,7 +9,7 @@ class WebInTab {
       that.doCreate(tab);
     });
     chrome.tabs.onUpdated.addListener(function () {
-      that.checkIfUrlExistInTabs(that.url);
+      that.tabId = that.checkIfUrlExistInTabs(that.url, null);
     });
     chrome.tabs.onRemoved.addListener(function (tabId) {
       that.doRemove(tabId);
@@ -24,7 +23,7 @@ class WebInTab {
     });
     chrome.alarms.onAlarm.addListener(function(alarm) {
       if (alarm.name === rechecktabAlarm) {
-        that.checkIfUrlExistInTabs(that.url);
+        that.tabId = that.checkIfUrlExistInTabs(that.url, null);
       }
     });
   }
@@ -48,19 +47,20 @@ class WebInTab {
     return (url1.includes(url2) || url2.includes(url1));
   }
 
-  checkIfUrlExistInTabs(url) {
-    if (!url) { this.tabId = -1; }
+  checkIfUrlExistInTabs(url, callback) {
+    if (!url) { return -1; }
     
     var that = this;
     chrome.tabs.query({},function(tabs){     
       tabs.forEach(function(tab){
         if (that.compareUrls(url, tab.url)) {
           // console.log (tab.id + " ::: " + url + " ::: " + tab.url);
-          that.tabId = tab.id;
-          return;
+          if (callback ) { callback(tab.id); }
+          return tab.id;
         }
       });
     });
-    this.tabId = -1;
+    if (callback ) { callback(-1); }
+    return -1;
   }
 }

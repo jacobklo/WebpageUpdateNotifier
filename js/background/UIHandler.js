@@ -28,10 +28,8 @@ var UIHandler = (function() {
     chrome.tabs.executeScript(tab.id, { file: '/js/lib/jQuery/jQuery.js' }, function() {
       chrome.tabs.insertCSS(tab.id, { file: '/js/lib/jQuery/jquery-ui.css' }, function() {
         chrome.tabs.executeScript(tab.id, { file: '/js/lib/jQuery/jquery-ui.js' }, function() {
-          chrome.tabs.insertCSS(tab.id, { file: '/js/background/box.css' }, function() {
-            chrome.tabs.executeScript(tab.id, { file: '/js/util/ExecuteHighlight.js' }, function() {
-              chrome.tabs.executeScript(tab.id, { code : 'ClickWatcher.show();'});
-            });
+          chrome.tabs.executeScript(tab.id, { file: '/js/util/ExecuteHighlight.js' }, function() {
+            chrome.tabs.executeScript(tab.id, { code : 'ClickWatcher.show();'});
           });
         });
       });
