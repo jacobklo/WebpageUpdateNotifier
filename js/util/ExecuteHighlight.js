@@ -38,6 +38,9 @@ var Highlighter = (function ($) {
     }
   };
 
+  // additional condition to temporary disable the box
+  resultModule.TemporaryDisablefunction = null;
+
   function handler(e) {
     var offset, el = e.target;
     var now = Date.now();
@@ -53,8 +56,11 @@ var Highlighter = (function ($) {
       box.show();
       return;
     }
-    console.log (el.id);
-    if (el === document.body || el.className === "selectDialog" || el.className === "selectDialogInfo") {
+    if (el === document.body || resultModule.TemporaryDisableOption) {
+      box.hide();
+      return;
+    }
+    if (resultModule.TemporaryDisable && resultModule.TemporaryDisable(e.pageX, e.pageY)) {
       box.hide();
       return;
     }
@@ -74,22 +80,44 @@ var Highlighter = (function ($) {
   return resultModule;
 }(jQuery));
 
-var ClickWatcher = (function ($) {
-  
+var ClickWatcher = (function (Highlighter, $) {
+  Highlighter.TemporaryDisable = function (x,y) {
+    var $selectDialog = $(".selectDialog");
+    var o = $selectDialog.dialog("open").closest('.ui-dialog').offset();
+    var left = o.left;
+    var right = o.left + $selectDialog.outerWidth();
+    var top = o.top;
+    var bottom = o.top + $selectDialog.outerHeight()+100;
+
+    var isXInside = x > left && x < right;
+    var isYInside = y > top && y < bottom;
+    
+    return isXInside && isYInside;
+  };
+  Highlighter.enable();
+
   var resultModule = {};
 
   resultModule.show = function() {
-    console.log ("ClickWatcher.show()");
+    var btn = {};
+    btn["close"] = function() {
+      selectDialog.dialog('close');
+    };
+
     var selectDialogInfo = $("<p/>")
-      .attr("class", "selectDialogInfo")
       .text("Select a element in this web page, We will help you monitor that element to see if it has updates");
     var selectDialog = $("<div/>")
       .attr("class", "selectDialog")
       .attr("title", "Select a element you want to monitor")
       .append(selectDialogInfo)
-      .dialog();
+      .dialog({
+        buttons: btn
+        ,close: function() {
+          Highlighter.disable();
+        }
+      });
   };
 
   return resultModule;
-}(jQuery));
+}(Highlighter, jQuery));
 
