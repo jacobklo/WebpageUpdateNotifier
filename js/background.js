@@ -17,19 +17,20 @@ require(['./common'], function() {
 chrome.runtime.onMessage.addListener(function(request, sender) {
   if (request.action == "ClickWatcherEvent") {
     if (request.result && request.result.webUrl && request.result.DOMObj) {
-      if (globalData.websites) {
-        globalData.websites.foreach(function (w) {
-          if (w.website == request.result.webUrl) {
-            w.DOMObj = request.result.DOMObj;
+      if (!globalData.websites) {
+        var newWeb = new WebPage(request.result.webUrl, request.result.DOMObj);
+        globalData.websites = [];
+        globalData.websites.push(newWeb);
+      }
+      else {
+        for (var w in globalData.websites) {
+          var web = globalData.websites[w];
+          if (web.website == request.result.webUrl) {
+            web.DOMObj = request.result.DOMObj;
             return;
           }
-        });
+        }
       }
-      var newWeb = new WebPage(request.result.webUrl , request.result.DOMObj);
-      if (!globalData.websites) {
-        globalData.websites = [];
-      }
-      globalData.websites.push(newWeb);
     }
   }
 });

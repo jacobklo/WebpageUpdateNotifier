@@ -31,6 +31,7 @@ function DOMtoString(document_root) {
         }
 }
 
+console.log ( datas);
 if (datas) {
     if (datas.webName) {
         chrome.runtime.sendMessage({

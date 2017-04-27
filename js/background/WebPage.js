@@ -19,9 +19,10 @@ class WebPage{
     this.setupSourceListener();
 
     var that = this;
-    this.currentTabId = this.webInTab.checkIfUrlExistInTabs(this.website, function(tabId) {
+    this.currentTabId = -2;
+    this.webInTab.checkIfUrlExistInTabs(this.website, function(tabId) {
       if (tabId > 0) {
-        console.log (tabId);
+        that.currentTabId = tabId;
         that.setupAlarm();
       }
     });
@@ -32,20 +33,20 @@ class WebPage{
     /// Alarm timer
     /////////////////////////////////////////////////////////
     var reloadWebsiteAlarm = "reloadWebsiteAlarm"+this.name;
-    var that = this;
     chrome.alarms.create(reloadWebsiteAlarm, {
         delayInMinutes: 0,
         periodInMinutes: 1
     });
 
+    var that = this;
     function reloadTabCallback() {
       var datas = {
         "tabId" : that.currentTabId
         ,"webName": that.name
-      }
-      
+      };
+      // TODO : datas here is undefined, why?
       chrome.tabs.executeScript(that.currentTabId, {
-          code: 'var datas = ' + JSON.stringify(datas)
+          code: 'var datas = ' + JSON.stringify(datas,null,2) + ";"
       }, function() {
           chrome.tabs.executeScript(that.currentTabId, {file: "js/lib/getPagesSource.js"});
       });
@@ -57,7 +58,6 @@ class WebPage{
 
     chrome.alarms.onAlarm.addListener(function(alarm) {
         if (alarm.name === reloadWebsiteAlarm) {
-          that.currentTabId = that.webInTab.tabId;
           if (that.currentTabId > 0) {
             chrome.tabs.reload(that.currentTabId, reloadTabCallback);
           }
