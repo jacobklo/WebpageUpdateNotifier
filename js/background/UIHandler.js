@@ -34,7 +34,7 @@ var UIHandler = (function() {
         });
       });
     });
-    console.log("tab: " + JSON.stringify(tab));
+    // console.log("tab: " + JSON.stringify(tab));
   };
 
   //// Public Methods

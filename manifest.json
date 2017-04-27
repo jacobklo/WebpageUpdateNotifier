@@ -19,5 +19,5 @@
     "default_icon": "icon.png"
     // ,"default_popup" : "popup.html"
   }
-  ,"permissions": ["alarms", "notifications", "*://*/*" ,"activeTab", "tabs","contextMenus", "<all_urls>"]
+  ,"permissions": ["alarms", "notifications", "*://*/*" , "tabs","contextMenus", "<all_urls>"]
 }

@@ -25,19 +25,21 @@ function DOMtoString(document_root) {
         }
         node = node.nextSibling;
     }
-    return {
-            "datas" : (datas ? datas : {})
-            ,"html" : html
-        }
+    return html;
 }
 
-console.log ( datas);
-if (datas) {
-    if (datas.webName) {
-        chrome.runtime.sendMessage({
-            action: "getSource"+datas.webName,
-            source: DOMtoString(document)
-        });
-    }
+function notify() {
+  if (!webdata || !webdata.webName) {
+    console.error ("DOMtoString : webdata is not defined");
+    return;
+  }
+  var result = {
+                  "tabId" : webdata.tabId
+                  ,"html" : DOMtoString(document)
+                };
+  chrome.runtime.sendMessage({
+    action: "getSource"+webdata.webName,
+    source: result
+  });
 }
 

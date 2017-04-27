@@ -3,7 +3,6 @@ var ClickWatcherEvent = (function() {
   var resultModule = {};
 
   resultModule.sendClickWatcherEvent = function(webUrl, DOMObj) {
-    
     chrome.runtime.sendMessage({
       action: "ClickWatcherEvent"
       ,result : {

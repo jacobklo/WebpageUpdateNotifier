@@ -44,11 +44,10 @@ class WebPage{
         "tabId" : that.currentTabId
         ,"webName": that.name
       };
-      // TODO : datas here is undefined, why?
-      chrome.tabs.executeScript(that.currentTabId, {
-          code: 'var datas = ' + JSON.stringify(datas,null,2) + ";"
-      }, function() {
-          chrome.tabs.executeScript(that.currentTabId, {file: "js/lib/getPagesSource.js"});
+      chrome.tabs.executeScript(that.currentTabId, {file: "js/lib/getPagesSource.js"}, function() {
+        chrome.tabs.executeScript(that.currentTabId, {code : "var webdata = "+JSON.stringify(datas)+";"}, function() {
+          chrome.tabs.executeScript(that.currentTabId, {code : "notify();"});
+        });
       });
     }
     function newTabCallback(newTab) {
@@ -75,7 +74,8 @@ class WebPage{
     var that = this;
     chrome.runtime.onMessage.addListener(function(request, sender) {
       if (request.action == "getSource"+that.name) {
-        if(request.source && request.source.datas && request.source.datas.tabId) {
+        console.log (request);
+        if(request.source && request.source.tabId) {
           // chrome.tabs.remove(request.source.datas.tabId);
            
           that.handleUpdateHtml(request.source.html);
@@ -88,9 +88,9 @@ class WebPage{
     if (!this.webTitle) {
       var getHtml = HtmlManipulations.htmlAction(handlingHtml, HtmlManipulations.htmlGetTitle);
       this.webTitle = getHtml.manipulatedItems[0];
-      console.log (this.webTitle);
+      console.log ("WEB : " + this.webTitle);
     }
-
+    console.log (this.DOMObj);
   }
 
   
